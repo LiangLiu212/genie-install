@@ -22,6 +22,18 @@ git = "*"
 perl = "*"                 # ./configure and the genie-config script are perl
 binutils = "*"             # readelf for the post-build link check
 
+# Optional: INCL++ nuclear-cascade support (`pixi install -e incl`, `pixi run -e incl build-inclxx`)
+[feature.incl.dependencies]
+cmake = "*"                # INCL++ is a CMake project
+libboost-devel = "*"       # INCL++ needs Boost date_time, program_options, timer (GENIE links them too)
+
+[environments]
+incl = ["incl"]
+
+[feature.incl.tasks]
+build-inclxx = { cmd = "bash scripts/build_inclxx.sh", description = "clone (if needed), configure and build INCL++ under ./inclxx" }
+smoke-incl = { cmd = "bash scripts/smoke_test_incl.sh", description = "gmkspl -> gevgen -> gntpc with the INCL26_09a tune (INCL vertex + cascade)" }
+
 [activation]
 # Sets GENIE, XSECSPLINEDIR, PYTHIA8DATA, PATH, LD_LIBRARY_PATH for every `pixi run` / `pixi shell`
 scripts = ["scripts/genie-env.sh"]

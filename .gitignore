@@ -7,3 +7,8 @@ GENIE_COMMIT
 data/
 work/
 *.log
+# INCL++ (optional): source clone, build tree, install prefix, commit record
+inclxx-src/
+inclxx-build/
+inclxx/
+INCLXX_COMMIT

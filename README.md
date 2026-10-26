@@ -22,7 +22,9 @@ Then `pixi shell` gives you a shell where `gevgen`, `gmkspl`, `gntpc`, `root` an
 **What you get:** GENIE `master`, Pythia8-only (Pythia6 is no longer supported by the
 stock GENIE configurations since v3.8), LHAPDF6, the default `rw-2018` INTRANUKE
 reweighting hooks, no INCL++, no Geant4, no Reweight package, no boosted dark matter
-(see [Enabling extra GENIE options](#enabling-extra-genie-options)).
+(see [Enabling extra GENIE options](#enabling-extra-genie-options)). The INCL++
+intranuclear cascade is an optional add-on with its own section,
+[GENIE with the INCL++ cascade](#optional-genie-with-the-incl-cascade).
 
 **Last tested:** 2026-10-26 (see [Tested configuration](#tested-configuration) for the
 exact versions). `master` moves every week; the smoke test at the end is your
@@ -63,6 +65,7 @@ pixi.lock               exact package versions (commit it; `pixi install` honour
 scripts/genie-env.sh    the environment contract (GENIE, XSECSPLINEDIR, PYTHIA8DATA, PATH, LD_LIBRARY_PATH)
 scripts/build_genie.sh  clone + configure + build
 scripts/smoke_test.sh   end-to-end check
+scripts/build_inclxx.sh, scripts/smoke_test_incl.sh   optional INCL++ build and check (see below)
 Generator/              GENIE checkout + in-tree build   (created by build-genie, git-ignored)
 data/                   your cross-section splines       (= $XSECSPLINEDIR, git-ignored)
 work/                   smoke-test output                (git-ignored)
@@ -279,6 +282,77 @@ Notes for people who build GENIE by hand elsewhere:
 - Outputs of this build are not bit-identical to a build with other dependency versions
   (e.g. Pythia 8.317 on the Fermilab spack stack): physics is the same, random sequences
   through Pythia8 are not.
+
+## Optional: GENIE with the INCL++ cascade
+
+GENIE can hand its final-state interactions (and, with the `INCL26_*` tunes, the
+quasi-elastic vertex itself) to the [INCL++](https://irfu.cea.fr/dphn/Spallation/incl.html)
+intranuclear cascade. This needs two extra things, both handled by the `incl`
+environment of this repository:
+
+- **INCL++ itself**, built from the GENIE-interface fork of INCL++ 6.34. INCL++ is
+  developed by CEA-Irfu and the University of Liège, is available **on request from its
+  authors** for non-commercial use, and **may not be redistributed** (see its
+  `LICENSE.pdf`), so this repository contains no INCL++ code and the fork
+  `git@github.com:LiangLiu212/inclxx.git` is private. Once you are authorised, point
+  `INCLXX_GIT_URL` at the fork or at your own copy of the source tree.
+- **GENIE with the INCL interface.** Official GENIE `master`/v3.8 ships only the old
+  `HINCLCascadeIntranuke` interface. The full interface (INCL nuclear model, INCL QE
+  vertex, INCL cascade, `INCL26_07a`/`INCL26_09a` tunes) lives on the branch
+  `feature/incl-v3_8` of `https://github.com/LiangLiu212/Generator`, which is the
+  production branch `feature/for_Anna` rebased onto the v3.8.0 release (R-3_08_00).
+
+```bash
+pixi install -e incl                        # default env + cmake + Boost (headers and libraries)
+pixi run -e incl build-inclxx               # INCL++ -> ./inclxx           (about half a minute on 16 cores)
+rm -rf Generator                            # if you built plain GENIE before
+GENIE_GIT_URL=https://github.com/LiangLiu212/Generator.git GENIE_GIT_REF=feature/incl-v3_8 \
+  pixi run -e incl build-genie              # GENIE v3.8 + INCL interface   (11 min on 16 cores)
+pixi run -e incl smoke-incl                 # INCL26_09a: gmkspl -> gevgen -> gntpc on Ar40 (9 min)
+pixi shell -e incl                          # work in it
+```
+
+`build-genie` enables `--enable-incl` automatically when `./inclxx/lib/libINCL_Physics.so`
+exists (`GENIE_ENABLE_INCL=0` forces it off, `=1` makes a missing INCL++ an error). Always
+use the `incl` environment for an INCL build: GENIE's INCL interface includes Boost headers.
+
+The environment contract gains, when `./inclxx` exists:
+
+| variable | value |
+|---|---|
+| `INCLXX_DIR` | `<repo>/inclxx` |
+| `INCLXX_DATA_DIR` | `<repo>/inclxx/share` (INCL, ABLA07, ABLA++, GEMINI++ tables; `NucleusGenINCL.xml` reads it) |
+| `PATH`, `LD_LIBRARY_PATH` | `inclxx/bin` and `inclxx/lib` prepended |
+
+Knobs of `scripts/build_inclxx.sh`: `INCLXX_GIT_URL`, `INCLXX_GIT_REF` (default: the commit
+SBND production uses), `INCLXX_NJOBS`, `INCLXX_BUILD_TYPE` (default `RelWithDebInfo`). The
+CMake options are the ones of the validated SBND/DUNE installations (ABLA07, ABLA++, GEMINI++,
+SMM and Fermi break-up de-excitation, ROOT I/O, no HDF5/protobuf).
+
+Using it: tune ids are `INCL26_07a_00_000` (SF-Unified QE, LQCD z-expansion) and
+`INCL26_09a_00_000` (Nieves QE, z-expansion, no RPA); both put the INCL cascade on every
+channel. They need their own cross-section splines (`gmkspl … --tune INCL26_09a_00_000`).
+
+Tested configuration (2026-10-26, same node as above, 16 jobs):
+
+| item | value |
+|---|---|
+| INCL++ | 6.34, GENIE-interface fork @ `8a6c1cf17e99dacca026e0a4268de35e7843cb1a`, build 34 s, 9 libraries |
+| GENIE | `feature/incl-v3_8` @ `df9e336d9a020f76b6467adda0e14c6e477a8c90` (R-3_08_00 + 22 commits), build 11 min, 96 libraries, 21 apps |
+| Boost / CMake | 1.92.0 / 4.4.4 (conda-forge), the rest as in the table above |
+| smoke | 20 "Default"-list numu Ar40 events at 1 GeV from a full INCL26_09a spline set: 26 s, exit 0, no FATAL; `gmkspl` numu Ar40 CCQE with the INCL26_09a nuclear model: 545 s; 50 CCQE events through the INCL cascade: 4 s, 50 gst entries, final-state hadrons in every event |
+
+Notes:
+- Boost ≥ 1.69 has no `libboost_system` (header-only). The branch's `Make.include` links
+  only the Boost libraries that exist; upstream's hard-coded `-lboost_system` fails on
+  modern Boost.
+- The INCL++ libraries carry no rpath and reference each other; `inclxx/lib` must be on
+  `LD_LIBRARY_PATH` (the activation script does it).
+- The rebased branch also fixes a double delete of the INCL nucleus between events
+  (`INCLNucleus::reset`) that older glibc never reported but glibc ≥ 2.29 aborts on
+  (`free(): double free detected in tcache 2` at the second event).
+- The INCL++ licence lets you build and run it; the resulting `inclxx/` directory and any
+  container image containing it must not be passed on either.
 
 ## Other ways to install GENIE
 
