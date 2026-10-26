@@ -1,0 +1,32 @@
+# GENIE Generator (official master, Pythia8-only) built against conda-forge via pixi.
+# See README.md. Usage:  pixi install && pixi run build-genie && pixi run smoke
+[workspace]
+name = "genie-install"
+description = "Build and run GENIE Generator (master) in a self-contained pixi environment"
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[dependencies]
+# GENIE's external dependencies (all from conda-forge)
+root_base = "6.40.*"       # ROOT without the python/jupyter extras of the `root` meta-package
+pythia8 = "8.312.*"        # hadronization + decays (mandatory since GENIE v3.8)
+lhapdf = "6.5.*"           # LHAPDF6 (GENIE's lhapdf5 interface is disabled)
+log4cpp = "1.1.*"
+libnsl = "*"             # conda-forge log4cpp links libnsl.so.3 but does not depend on it (verified 2026-10-26)
+libxml2-devel = "*"        # headers live in the -devel split package
+gsl = "*"
+# toolchain
+cxx-compiler = "*"         # conda gcc/g++ matching the libstdc++ ROOT was built with
+make = "*"
+git = "*"
+perl = "*"                 # ./configure and the genie-config script are perl
+binutils = "*"             # readelf for the post-build link check
+
+[activation]
+# Sets GENIE, XSECSPLINEDIR, PYTHIA8DATA, PATH, LD_LIBRARY_PATH for every `pixi run` / `pixi shell`
+scripts = ["scripts/genie-env.sh"]
+
+[tasks]
+build-genie = { cmd = "bash scripts/build_genie.sh", description = "clone (if needed), configure and build GENIE under ./Generator" }
+smoke = { cmd = "bash scripts/smoke_test.sh", description = "gmkspl -> gevgen -> gntpc end-to-end check under ./work" }
+genie-env = { cmd = "bash scripts/genie-env.sh --print", description = "print the GENIE environment contract" }

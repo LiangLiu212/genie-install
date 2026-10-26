@@ -1,0 +1,9 @@
+# pixi environment and caches
+.pixi/
+# the GENIE checkout + build products (clone + build with `pixi run build-genie`)
+Generator/
+GENIE_COMMIT
+# splines and generated events
+data/
+work/
+*.log
