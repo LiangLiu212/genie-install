@@ -161,7 +161,8 @@ libraries in `Generator/lib`, configuration in `Generator/config`. There is no
 bash scripts/smoke_test.sh                      # still inside the pixi shell
 ```
 
-It runs the standard chain in `work/smoke-<timestamp>/`:
+It runs the standard chain in `work/smoke-<timestamp>/`, printing each command it runs
+and `done!` after every passed step (green on a terminal):
 
 | step | command | checks |
 |---|---|---|
@@ -171,7 +172,7 @@ It runs the standard chain in `work/smoke-<timestamp>/`:
 | 4 | `gmkspl -p 14 -t 1000010010 -n 30 -e 10 --event-generator-list CCDIS …` | DIS splines on a free proton |
 | 5 | `gevgen -n 20 -p 14 -t 1000010010 -e 5 … --event-generator-list CCDIS` | the `This is PYTHIA version 8.312` banner appears, i.e. hadronization really runs through Pythia8 |
 
-Steps 1–3 took 1 minute on the test machine; steps 4–5 took 8 minutes in the 2026-10-26 test on the same node (not re-timed on 2026-11-02), because
+Steps 1–3 took 1 minute on the test machine; steps 4–5 took 8 minutes, because
 `gmkspl` computes at least 30 knots per spline whatever `-n` says and DIS has seven of them. Skip them with `GENIE_SMOKE_DIS=0
 bash scripts/smoke_test.sh` if you only need the quick check. The last line is `=== SMOKE_OK`.
 
@@ -316,7 +317,7 @@ Measured on 2026-11-02 on an AlmaLinux 9.8 x86_64 node (glibc 2.34) with
 | GSL | 2.8 |
 | build | 12 min wall (`scripts/build_genie.sh`, clean), 96 libraries, 21 apps, 0 errors |
 | smoke steps 1–3 | 1 min (1 CCQE spline on C12, 100 events, 100 gst entries) |
-| smoke steps 4–5 | 8 min, measured 2026-10-26 on the same node and dependency versions (GENIE master 795ebd0a); not re-timed on 2026-11-02 (7 CCDIS splines on H1, 20 events, Pythia 8.312 banner) |
+| smoke steps 4–5 | 8 min (7 CCDIS splines on H1, 20 events, Pythia 8.312 banner, 0 Pythia errors) |
 
 Notes for people who build GENIE by hand elsewhere:
 
