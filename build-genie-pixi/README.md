@@ -1,14 +1,6 @@
 # Install GENIE with pixi (Linux x86_64)
 
-A self-contained, no-root, no-system-packages way to build the
-[GENIE](http://www.genie-mc.org) neutrino event generator from the official
-[GENIE-MC/Generator](https://github.com/GENIE-MC/Generator) `master` branch.
-Every dependency (ROOT, Pythia8, LHAPDF, log4cpp, libxml2, GSL, the C++ compiler)
-comes from [conda-forge](https://conda-forge.org) through [pixi](https://pixi.sh),
-pinned in a lock file, so the same recipe gives the same environment on any
-x86_64 Linux machine: laptop, desktop, cluster login node, or container.
-
-The whole route, from a bare machine:
+## Quick start
 
 ```bash
 curl -fsSL https://pixi.sh/install.sh | sh     # pixi itself, once per machine; then open a new shell
@@ -22,9 +14,18 @@ gevgen --help                  # ready; `exit` leaves the sub-shell
 ```
 
 pixi is used for two commands only: `pixi install` once, and `pixi shell` whenever you
-open a new terminal. Everything inside that sub-shell is plain bash: the two scripts,
-then `gevgen`, `gmkspl`, `gntpc`, `root` and `python` (with PyROOT). A batch job or a
+open a new terminal. Everything inside that sub-shell is plain bash. A batch job or a
 shell rc can even skip `pixi shell`, see [Without pixi at all](#without-pixi-at-all).
+
+## What this is
+
+A self-contained, no-root, no-system-packages way to build the
+[GENIE](http://www.genie-mc.org) neutrino event generator from the official
+[GENIE-MC/Generator](https://github.com/GENIE-MC/Generator) `master` branch.
+Every dependency (ROOT, Pythia8, LHAPDF, log4cpp, libxml2, GSL, the C++ compiler)
+comes from [conda-forge](https://conda-forge.org) through [pixi](https://pixi.sh),
+pinned in a lock file, so the same recipe gives the same environment on any
+x86_64 Linux machine: laptop, desktop, cluster login node, or container.
 
 **What you get:** GENIE `master`, Pythia8-only (Pythia6 is no longer supported by the
 stock GENIE configurations since v3.8), LHAPDF6, the default `rw-2018` INTRANUKE
