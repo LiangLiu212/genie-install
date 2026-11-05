@@ -1,0 +1,43 @@
+# GENIE Generator with the INCL++ intranuclear cascade, built against conda-forge via pixi.
+# GENIE comes from branch feature/incl-v3_8 of https://github.com/LiangLiu212/Generator
+# (the SBND INCL interface rebased onto GENIE master); INCL++ 6.34 is built from its
+# GENIE-interface fork (access required, see README.md). Usage, from this directory:
+#   pixi install && pixi shell          # pixi is not needed after this line
+#   bash scripts/build_inclxx.sh && bash scripts/build_genie.sh && bash scripts/smoke_test_incl.sh
+[workspace]
+name = "build-genie-incl-pixi"
+description = "Build and run GENIE Generator with the INCL++ cascade in a self-contained pixi environment"
+channels = ["conda-forge"]
+platforms = ["linux-64"]
+
+[dependencies]
+# GENIE's external dependencies (all from conda-forge)
+root_base = "6.40.*"       # ROOT without the python/jupyter extras of the `root` meta-package
+pythia8 = "8.312.*"        # hadronization + decays (mandatory since GENIE v3.8)
+lhapdf = "6.5.*"           # LHAPDF6 (GENIE's lhapdf5 interface is disabled)
+log4cpp = "1.1.*"
+libnsl = "*"               # conda-forge log4cpp links libnsl.so.3 but does not depend on it (verified 2026-10-26)
+libxml2-devel = "*"        # headers live in the -devel split package
+gsl = "*"
+# INCL++ and GENIE's INCL interface
+cmake = "*"                # INCL++ is a CMake project
+libboost-devel = "*"       # INCL++ needs Boost date_time, program_options, timer; GENIE's INCL interface includes Boost headers
+fortran-compiler = "*"     # INCL++'s ABLA07 de-excitation code is Fortran (conda gfortran)
+# toolchain
+cxx-compiler = "*"         # conda gcc/g++ matching the libstdc++ ROOT was built with
+make = "*"
+git = "*"
+perl = "*"                 # ./configure and the genie-config script are perl
+binutils = "*"             # readelf for the post-build link check
+
+[activation]
+# Sets GENIE, XSECSPLINEDIR, PYTHIA8DATA, INCLXX_DIR, INCLXX_DATA_DIR, PATH, LD_LIBRARY_PATH for every `pixi shell` / `pixi run`
+scripts = ["scripts/genie-env.sh"]
+
+# Non-interactive equivalents of the scripts (container recipes, CI): `pixi run build-inclxx`, …
+[tasks]
+build-inclxx = { cmd = "bash scripts/build_inclxx.sh", description = "clone (if needed), configure and build INCL++ under ./inclxx" }
+build-genie = { cmd = "bash scripts/build_genie.sh", description = "clone (if needed), configure and build GENIE with the INCL interface under ./Generator" }
+smoke-incl = { cmd = "bash scripts/smoke_test_incl.sh", description = "gmkspl -> gevgen -> gntpc with the INCL26_09a tune (INCL vertex + cascade)" }
+smoke = { cmd = "bash scripts/smoke_test.sh", description = "gmkspl -> gevgen -> gntpc with the plain G18_02a tune, plus a Pythia8 check" }
+genie-env = { cmd = "bash scripts/genie-env.sh --print", description = "print the GENIE/INCL environment contract" }

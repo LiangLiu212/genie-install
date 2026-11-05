@@ -1,0 +1,16 @@
+# pixi environment and caches
+.pixi/
+# the GENIE checkout + build products (clone + build with `bash scripts/build_genie.sh`)
+Generator/
+GENIE_COMMIT
+# INCL++: source clone, build tree, install prefix, commit record (bash scripts/build_inclxx.sh)
+inclxx-src/
+inclxx-build/
+inclxx/
+INCLXX_COMMIT
+# splines and generated events
+data/
+work/
+*.log
+# `pixi shell-hook -s bash > genie-setup.sh` output (machine-specific)
+genie-setup.sh
