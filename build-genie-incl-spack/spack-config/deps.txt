@@ -1,0 +1,17 @@
+# GENIE's dependencies, pinned to the DUNE CVMFS Spack instance (v1.2.2 and its v1.1.1
+# upstream). They are exactly the packages DUNE's own genie@3.06.02 in the
+# dunesw-10_26_00d05-justin-01_06_05 environment was built against (its spack.lock, read on
+# 2026-11-05): one compiler, gcc 12.5.0, and one C++ standard, 17.
+# Boost is not listed: every CVMFS Boost lacks the timer library that INCL++ and GENIE's INCL
+# interface link, so scripts/setup_deps.sh builds one into ./spack-packages (GI_BOOST_SPEC).
+#
+# name          spec (version/hash)        flag: "external" = not loaded, prefix only
+gcc             gcc@12.5.0/wrkusgq
+gcc-runtime     gcc-runtime@12.5.0/xbf4ipj
+cmake           cmake@3.31.11/vavaqin
+root            root@6.28.12/2rxgsmi
+pythia8         pythia8@8.317/7lu7p2p
+lhapdf          lhapdf@6.5.5/aadi2eq
+log4cpp         log4cpp@1.1.3/e7abosg
+gsl             gsl@2.8/zgt5ddy
+libxml2         libxml2@2.9.13/uada37f     external

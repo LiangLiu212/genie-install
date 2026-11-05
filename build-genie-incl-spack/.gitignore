@@ -1,0 +1,18 @@
+# local Spack install tree (the Boost build), stage + caches, and the generated config scope
+spack-packages/
+spack-stage/
+spack-config/config.yaml
+# written by scripts/setup_deps.sh: `spack load --sh` output + GI_PREFIX_* (machine-specific)
+spack-env.sh
+# the GENIE checkout + build products (clone + build with `bash scripts/build_genie.sh`)
+Generator/
+GENIE_COMMIT
+# INCL++: source clone, build tree, install prefix, commit record (bash scripts/build_inclxx.sh)
+inclxx-src/
+inclxx-build/
+inclxx/
+INCLXX_COMMIT
+# splines and generated events
+data/
+work/
+*.log
